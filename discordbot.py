@@ -57,8 +57,6 @@ def lenny_check(lenny):
     return badlenny
 
 
-
-
 def word_search(word):
     if word == 1:
         num = random.randrange(1,999)
@@ -90,7 +88,20 @@ async def on_message(message):
     
     if "The Fam" == channelname:
         
-        if message.content == "$Wordme":
+        if message.content == "$Menu":
+            menuembeded = discord.Embed(title="Available commands for Spam Bot!",color=0x00ff00)
+            menuembeded.add_field(name="How to connect?",value="Command brings up instructions on how to join the Minecraft server")
+            menuembeded.add_field(name="$Wordme",value="Pulls a random page from Urban Dictonary to give you a new word to learn!")
+            menuembeded.add_field(name="$Wordsearch",value="Type $Wordsearch [word to be searched] to look up a word on Urban Dictionary (Use at your own risk. I have no idea what Urban Dictionary will return you)")
+            menuembeded.add_field(name="Spam",value="I will randomly change the trigger words, and the phrase to be spammed.")
+            menuembeded.add_field(name="$Start",value="Command remotely starts Minecraft Server")
+            menuembeded.add_field(name="$Check",value="Command checks Minecraft Server's status")
+            menuembeded.add_field(name="$Stop",value="Command remotely stops Minecraft Server")
+            menuembeded.add_field(name="$Lenny",value="See what Lenny wants to come and visit!")
+
+            await message.channel.send(embed = menuembeded)
+
+        elif message.content == "$Wordme":
             urbanembeded = word_search(1)
             await message.channel.send(embed = urbanembeded)
 
@@ -116,23 +127,6 @@ async def on_message(message):
             peepeecomplete = ''.join(peepee)
             await message.channel.send(peepeecomplete)
 
-
-
-        elif message.content == "$Menu":
-            menuembeded = discord.Embed(title="Available commands for Spam Bot!",color=0x00ff00)
-            menuembeded.add_field(name="How to connect?",value="Command brings up instructions on how to join the Minecraft server")
-            menuembeded.add_field(name="$Wordme",value="Pulls a random page from Urban Dictonary to give you a new word to learn!")
-            menuembeded.add_field(name="$Wordsearch",value="Type $Wordsearch [word to be searched] to look up a word on Urban Dictionary (Use at your own risk. I have no idea what Urban Dictionary will return you)")
-            menuembeded.add_field(name="Spam",value="I will randomly change the trigger words, and the phrase to be spammed.")
-            menuembeded.add_field(name="$Start",value="Command remotely starts Minecraft Server")
-            menuembeded.add_field(name="$Check",value="Command checks Minecraft Server's status")
-            menuembeded.add_field(name="$Stop",value="Command remotely stops Minecraft Server")
-            menuembeded.add_field(name="$Lenny",value="See what Lenny wants to come and visit!")
-
-
-            await message.channel.send(embed = menuembeded)
-
-
         elif  "$Wordsearch" in message.content:
             tmpword = message.content.split()
             word_to_find = ''
@@ -143,21 +137,16 @@ async def on_message(message):
             urbanembeded = word_search(word_to_find)
             await message.channel.send(embed = urbanembeded)
         
-
         elif message.content == "steamedham":
 
             ham = discord.Embed(title="Yes I shoul- GOOD LORD WHAT IS GOING ON IN THERE?!",color=0x00ff00) 
             ham.add_field(name="steamedclams",value="Aurora borealis\nA... Aurora Borealis? At this time of year? At this time of day? In this part of the country? Localized entirely within your kitchen?\nYes\nMay I see it?\nNo")
             await message.channel.send(embed = ham)
 
-        
-
         elif message.content == "How to connect?":
             messageembeded = discord.Embed(title="How to connect", description="Steps to connect to Minecraft Server", color=0x00ff00)
             messageembeded.add_field(name="Instructions",value="See pinned in the top right of the server to download the server files, along with the Server IP (Hint. you will need to add ':25565' after the ip). After downloading the server files, open CurseForge, locate 'My Modpacks'. In the top right select 'create custom profile'. Finally, select 'import' to then choose the file you downloaded previously (check downloads).Right click the new icon within CurseForge and select 'open folder'.Then go to Mods and delete all Dynamic Tree mods and Dynamic surroundings. Open Minecraft by selecting play on CurseForge, and place the I.P from early in the 'Add server' button in 'Multiplayer'")
             await message.channel.send(embed = messageembeded)
-
-        
 
         elif message.content == "$Start":
             startserverfile = "C:/Users/ccrac/Desktop/Server Files/serverstart.bat"
@@ -172,9 +161,6 @@ async def on_message(message):
             else:
                 await message.channel.send("Server is already running!")
             
-
-
-
         elif message.content == "$Check":
             foundflag = 0
             for proc in psutil.process_iter():
@@ -184,8 +170,6 @@ async def on_message(message):
                 await message.channel.send("Server is up!")
             else:
                 await message.channel.send("Server is down!")
-
-
 
         elif message.content == "$Stop":
             killedflag = 0
@@ -206,6 +190,7 @@ async def on_message(message):
                     for i in range(10):
                         await message.channel.send(theFam)
                     break
+
         if "guido" in message.content.lower():
             await message.channel.send("GUUUIIIIIDDDDDOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
     
@@ -299,7 +284,6 @@ async def on_message(message):
 
         elif "Boomy" in message.author.name:
                 await message.add_reaction("🥚")
-
 
 
 client.run('ODc5ODM0OTU0NTEzNjU3ODY2.YSVgJw.hGqteLDEj1OtVe4yASBw8QaXSyI')
