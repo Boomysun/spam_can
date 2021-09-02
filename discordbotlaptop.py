@@ -1,5 +1,4 @@
 import discord
-from discord_components import DiscordComponents, Button, ButtonStyle
 import random
 import requests
 from bs4 import BeautifulSoup
@@ -14,6 +13,8 @@ schoolKeywords = ["guido","Guido"]
 school = "GUIIIIIIIDDDDOOOOOOOOOOOOOOO"
 tjdaily123Keywords = ["Dad!"]
 dadbot = "shut up dad bot, im Spam Can"
+
+
 
 def lenny():
     f = open('len.html','r', encoding='utf-8')
@@ -206,22 +207,8 @@ async def on_message(message):
             await message.channel.send(embed = menuembeded)
 
         elif "Boomy" in message.author.name and "b" == message.content:
-            components = {
-                "message": "this is a test message", 
-                "components": [{
-                    "type": 1,
-                    "components": [
-                        {
-                        "type": 2,
-                        "label": "Click me!",
-                        "style": 1,
-                        "custom_id": "click_one"
-                        }
-                    ]
-                }]
-            }
-            await message.channel.send(type=2, content="Message Here", components=[Button(style=ButtonStyle.URL, label="Example Invite Button", url="https://google.com"), Button(style=ButtonStyle.blue, label="Default Button", custom_id="button")])
-            await message.channel.send()
+            
+            print("")
 
         elif "$Lenny" in message.content:
             badlenny = 1
