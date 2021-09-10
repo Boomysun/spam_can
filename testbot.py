@@ -1,6 +1,7 @@
 import pickle
 from os import pipe
 from sys import stdout
+from typing import DefaultDict
 from discord_components import component
 from discord_components.component import Select, SelectOption
 from discord import guild, message
@@ -101,6 +102,11 @@ def lenny_check(lenny):
         x += 1
     return badlenny
 
+def user_check(name_to_be_checked,coord_dict):
+    for name in coord_dict:
+        if name_to_be_checked == name:
+            return 1
+    return 0
 
 @bot.event
 async def on_ready():
@@ -109,7 +115,7 @@ async def on_ready():
         pickle_in = open("coord.pickle","rb")
         coord_dict = pickle.load(pickle_in)
     except:
-        coord_dict = {"Boomysum": ""}
+        coord_dict = {}
         pickle_out = open("coord.pickle","wb")
         pickle.dump(coord_dict,pickle_out)
 
@@ -147,13 +153,19 @@ async def Menu(ctx: discord.ext.commands.Context):
         menuembeded = discord.Embed(title="Available commands for Spam Bot!",color=0x00ff00)
         menuembeded.add_field(name="How to connect?",value="Command brings up instructions on how to join the Minecraft server")
         menuembeded.add_field(name="$Wordme",value="Pulls a random page from Urban Dictonary to give you a new word to learn!")
-        menuembeded.add_field(name="$Wordsearch",value="Type $Wordsearch [word to be searched] to look up a word on Urban Dictionary (Use at your own risk. I have no idea what Urban Dictionary will return you)")
+        menuembeded.add_field(name="$Wordsearch",value="Type $Wordsearch [word to be searched] to look up a word on Urban Dictionary")
         menuembeded.add_field(name="Spam",value="I will randomly change the trigger words, and the phrase to be spammed.")
         menuembeded.add_field(name="$Start",value="Command remotely starts Minecraft Server")
         menuembeded.add_field(name="$Check",value="Command checks Minecraft Server's status")
         menuembeded.add_field(name="$Restart",value="Command will attempt to shut down the server, then start it again")
         menuembeded.add_field(name="$Stop",value="Command remotely stops Minecraft Server")
         menuembeded.add_field(name="$Lenny",value="See what Lenny wants to come and visit!")
+        menuembeded.add_field(name="$Add",value="Add something to your notebook!")
+        menuembeded.add_field(name="$Rem",value="Remove something to your notebook!")
+        menuembeded.add_field(name="$Print",value="Print out all the entries to the notebook")
+
+
+
         await ctx.channel.send(embed = menuembeded)
 
         await ctx.send(
@@ -299,31 +311,62 @@ async def Restart(ctx):
     await Start(ctx)
 
 @bot.command()
-async def t(ctx):
+async def Add(ctx):
+    if "The Fam" != ctx.guild.name:
+        return
     msg = str(ctx.message.content)
-    msg = msg[3:]
+    msg = msg[5:]
     msg = msg.replace(" ","_")
+
     pickle_in = open("coord.pickle","rb")
     coord_dict = pickle.load(pickle_in)
-    already_in_dict = 0
-    for name in coord_dict:
-        print("Name:" + name + "\tfrom message:" + ctx.message.author.name)
-        if ctx.message.author.name == name:
-            already_in_dict = 1
+
+    already_in_dict = user_check(ctx.message.author.name,coord_dict)
     if already_in_dict == 1:
-        coord_dict[ctx.message.author.name] = [coord_dict[ctx.message.author.name], msg ]
+        coord_dict[ctx.message.author.name].append(msg)
     else:
-        coord_dict[ctx.message.author.name] = msg
+        coord_dict[ctx.message.author.name] = []
+        await ctx.channel.send("Hey there! It seems this is your first time utilizing this feature. Glad to have you! Since this is your first time, I had to remember your name. So please just try again and ill put it in my noggin this time!")
+    
+
     pickle_out = open("coord.pickle","wb")
     pickle.dump(coord_dict,pickle_out)
 
 @bot.command()
-async def pr(ctx):
+async def Rem(ctx):
+    if "The Fam" != ctx.guild.name:
+        return
+    msg = str(ctx.message.content)
+    msg = msg[5:]
+    msg = msg.replace(" ","_")
+
+    pickle_in = open("coord.pickle","rb")
+    coord_dict = pickle.load(pickle_in)
+    in_dict = user_check(ctx.message.author.name,coord_dict)
+    if in_dict == 1:
+        try:
+            coord_dict[ctx.message.author.name].remove(msg)
+            await ctx.channel.send("Successfully removed: " + msg)
+        except:
+            await ctx.channel.send("Failed removed: " + msg)
+    pickle_out = open("coord.pickle","wb")
+    pickle.dump(coord_dict,pickle_out)
+            
+        
+
+    
+
+@bot.command()
+async def Print(ctx):
+    if "The Fam" != ctx.guild.name:
+        return
     tmplist = []
     pickle_in = open("coord.pickle","rb")
     coord_dict = pickle.load(pickle_in)
-    for k, v in coord_dict.items():
-        print((k + ' : %s\n')*len(v) % tuple(v))
+    for key in coord_dict:
+        await ctx.channel.send("User: " + key)
+        for value in coord_dict[key]:
+            await ctx.channel.send(str(value).replace("_", " "))
 
 
         
@@ -335,4 +378,4 @@ async def pr(ctx):
 
 
 
-bot.run("ODc5ODM0OTU0NTEzNjU3ODY2.YSVgJw.WAhX0n6MJBS9rgfKI-0ZuN098xg")
+bot.run("ODc5ODM0OTU0NTEzNjU3ODY2.YSVgJw.fdULVb4hpq4HifjwfwuGcqX4qZ4")
