@@ -351,10 +351,6 @@ async def Rem(ctx):
             await ctx.channel.send("Failed removed: " + msg)
     pickle_out = open("coord.pickle","wb")
     pickle.dump(coord_dict,pickle_out)
-            
-        
-
-    
 
 @bot.command()
 async def Print(ctx):
@@ -368,7 +364,14 @@ async def Print(ctx):
         for value in coord_dict[key]:
             await ctx.channel.send(str(value).replace("_", " "))
 
-
+@bot.command()
+async def Poll(ctx):
+    msg = str(ctx.message.content)
+    msg = msg[6:]
+    poll = discord.Embed(title=msg,color=0x00ff00)
+    final = await ctx.channel.send(embed = poll)
+    await final.add_reaction("⬆️")
+    await final.add_reaction("⬇️")
         
 
     
