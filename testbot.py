@@ -1,10 +1,12 @@
+import pickle
+from os import pipe
+from sys import stdout
 from discord_components import component
 from discord_components.component import Select, SelectOption
 from discord import guild, message
 import discord
 from discord_components import ActionRow, Button, ButtonStyle, ComponentsBot
-
-
+import time
 import random
 import requests
 from bs4 import BeautifulSoup
@@ -15,6 +17,14 @@ import psutil
 bot = ComponentsBot(command_prefix = "$")
 
 def word_search(word_original):
+    """Creates URL for Urban Dictionary.com to pull a 1. Random word or 2. searched word
+
+    Args:
+        word_original (1 or str): Pass a 1 if you want a random page. Otherwise, pass a string
+
+    Returns:
+        discord.embeded: this is the embeded message ready to be sent
+    """
     if word_original == 1:
         num = random.randrange(1,999)
         vgm_url = 'https://www.urbandictionary.com/random.php?page=' + str(num)
@@ -38,6 +48,11 @@ def word_search(word_original):
     return urbanembeded
 
 def lenny():
+    """Pulls random Lenny face from len.html (I think is the name of it).
+
+    Returns:
+        str: Lenny's face
+    """
     f = open('len.html','r', encoding='utf-8')
     lines = f.readlines()
     x = 0
@@ -70,6 +85,14 @@ def lenny():
     return leny
 
 def lenny_check(lenny):
+    """Checks to make sure lenny is suitable to be sent to a discord
+
+    Args:
+        lenny (str): Lenny in question
+
+    Returns:
+        int: returns a 1 if the lenny is no good or 0 if he is
+    """
     x = 0
     badlenny = 0
     while x < len(lenny):
@@ -82,23 +105,13 @@ def lenny_check(lenny):
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
-
-
-@bot.command()
-async def button(ctx: discord.ext.commands.Context) -> None:
-    print(ctx.guild.name)
-    if "TDQC" == ctx.guild.name:
-        await ctx.send(
-            "Hello, World!",
-            components = [
-                Select(placeholder="Simple placeholder",
-                options = [SelectOption(label="option 1",value="option 1"),
-                            SelectOption(label="option 2",value="option 2")]
-                )
-            ],
-        )
-        interaction = await bot.wait_for("button_click", check = lambda i: i.custom_id == "button1")
-        await interaction.send(content = "Button clicked!")
+    try:
+        pickle_in = open("coord.pickle","rb")
+        coord_dict = pickle.load(pickle_in)
+    except:
+        coord_dict = {"Boomysum": ""}
+        pickle_out = open("coord.pickle","wb")
+        pickle.dump(coord_dict,pickle_out)
 
 @bot.command()
 async def m (ctx):
@@ -138,6 +151,7 @@ async def Menu(ctx: discord.ext.commands.Context):
         menuembeded.add_field(name="Spam",value="I will randomly change the trigger words, and the phrase to be spammed.")
         menuembeded.add_field(name="$Start",value="Command remotely starts Minecraft Server")
         menuembeded.add_field(name="$Check",value="Command checks Minecraft Server's status")
+        menuembeded.add_field(name="$Restart",value="Command will attempt to shut down the server, then start it again")
         menuembeded.add_field(name="$Stop",value="Command remotely stops Minecraft Server")
         menuembeded.add_field(name="$Lenny",value="See what Lenny wants to come and visit!")
         await ctx.channel.send(embed = menuembeded)
@@ -150,8 +164,12 @@ async def Menu(ctx: discord.ext.commands.Context):
                     Button(label="Lenny",custom_id="lenny"),
                     Button(label="Start",custom_id="start"),
                     Button(label="Check",custom_id="check"),
-                    Button(label="Stop",custom_id="stop")
-                    )
+                    Button(label="Stop",custom_id="stop"),
+                    
+                ),
+                ActionRow(
+                    Button(label="Restart",custom_id="restart")
+                )
             ]
         )
         interaction = await bot.wait_for("button_click")
@@ -162,9 +180,12 @@ async def Menu(ctx: discord.ext.commands.Context):
         elif interaction.custom_id == "start":
             await Start(ctx)
         elif interaction.custom_id == "check":
+            await interaction.respond(type=6)
             await Check(ctx)
         elif interaction.custom_id == "stop":
             await Stop(ctx)
+        elif interaction.custom_id == "restart":
+            await Restart(ctx)
         await interaction.respond(type=6)
         
 @bot.command()
@@ -200,15 +221,14 @@ async def Lenny(ctx):
 async def Start(ctx: discord.ext.commands.Context):
     if ctx.guild.name != "The Fam":
         return
-    startserverfile = "C:/Users/ccrac/Desktop/Server Files/serverstart.bat"
-    startserverfolder = "C:/Users/ccrac/Desktop/Server Files/"
     foundflag = 0
     for proc in psutil.process_iter():
         if "java.exe" in proc.name():
             foundflag = 1
     if 0 == foundflag:
-        subprocess.Popen("C:/Users/ccrac/Desktop/Server Files/startserver.bat", cwd= r"C:/Users/ccrac/Desktop/Server Files")
-        await ctx.channel.send("Server successfully started!")
+        await ctx.channel.send("Attempting to start server...")
+        subprocess.Popen("G:/Minecraft/Server Files/startserver.bat", cwd= r"G:/Minecraft/Server Files")
+        await ctx.channel.send("Server successfully started! ( Please give it a minute to fully start. You can click the 'Refresh' button on the Multiplayer screen to be sure!)")
     else:
         await ctx.channel.send("Server is already running!")
 
@@ -224,6 +244,29 @@ async def Check(ctx):
         await ctx.channel.send("Server is up!")
     else:
         await ctx.channel.send("Server is down!")
+    submenuembeded = discord.Embed(title="What would you like to do next?",color=0x00ff00)
+    submenuembeded.add_field(name="$Start",value="Command remotely starts Minecraft Server")
+    submenuembeded.add_field(name="$Restart",value="Command will attempt to shut down the server, then start it again")
+    submenuembeded.add_field(name="$Stop",value="Command remotely stops Minecraft Server")
+    await ctx.channel.send(embed = submenuembeded)
+    await ctx.send(
+        "Click to choose:",
+        components = [
+            ActionRow(
+                Button(label="Start",custom_id="start"),
+                Button(label="Restart",custom_id="restart"),
+                Button(label="Stop",custom_id="stop")
+                )
+        ]
+    )
+    interaction = await bot.wait_for("button_click")
+    if interaction.custom_id == "start":
+        await Start(ctx)
+    elif interaction.custom_id == "restart":
+        await Restart(ctx)
+    elif interaction.custom_id == "stop":
+        await Stop(ctx)
+    await interaction.respond(type=6)
 
 @bot.command()
 async def Stop(ctx):
@@ -239,10 +282,57 @@ async def Stop(ctx):
     else:
         await ctx.channel.send("Sorry, there was an error shutting down the server.")
 
+@bot.command()
+async def Restart(ctx):
+    if ctx.guild.name != "The Fam":
+        return
+    killedflag = 0
+    for proc in psutil.process_iter():
+        if "java.exe" in proc.name():
+            proc.kill()
+            await ctx.channel.send("Found the server. Shutting it down...")
+            time.sleep(3)
+            killedflag = 1
+    if killedflag != 1:
+        await ctx.channel.send("Server not found!")
+    await ctx.channel.send("Attempting to start the server.")
+    await Start(ctx)
+
+@bot.command()
+async def t(ctx):
+    msg = str(ctx.message.content)
+    msg = msg[3:]
+    msg = msg.replace(" ","_")
+    pickle_in = open("coord.pickle","rb")
+    coord_dict = pickle.load(pickle_in)
+    already_in_dict = 0
+    for name in coord_dict:
+        print("Name:" + name + "\tfrom message:" + ctx.message.author.name)
+        if ctx.message.author.name == name:
+            already_in_dict = 1
+    if already_in_dict == 1:
+        coord_dict[ctx.message.author.name] = [coord_dict[ctx.message.author.name], msg ]
+    else:
+        coord_dict[ctx.message.author.name] = msg
+    pickle_out = open("coord.pickle","wb")
+    pickle.dump(coord_dict,pickle_out)
+
+@bot.command()
+async def pr(ctx):
+    tmplist = []
+    pickle_in = open("coord.pickle","rb")
+    coord_dict = pickle.load(pickle_in)
+    for k, v in coord_dict.items():
+        print((k + ' : %s\n')*len(v) % tuple(v))
+
+
         
 
+    
 
 
 
 
-bot.run("ODc5ODM0OTU0NTEzNjU3ODY2.YSVgJw.6T7x41V7W0ETv-n-RYy9VhEsn8g")
+
+
+bot.run("ODc5ODM0OTU0NTEzNjU3ODY2.YSVgJw.WAhX0n6MJBS9rgfKI-0ZuN098xg")
