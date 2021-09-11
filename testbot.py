@@ -131,6 +131,7 @@ async def Menu(ctx: discord.ext.commands.Context):
         menuembeded.add_field(name="$Wordsearch",value="Type $Wordsearch [word to be searched] to look up a word on Urban Dictionary (Use at your own risk. I have no idea what Urban Dictionary will return you)")
         menuembeded.add_field(name="$Fistbumpcount",value="Get a recently updated firstbump count")
         menuembeded.add_field(name="$Lenny",value="See what Lenny wants to come and visit!")
+        menuembeded.add_field(name="$Poll",value="Use $Poll to set up a question and get some feedback!")
         await ctx.channel.send(embed = menuembeded)
         
         await ctx.send(
@@ -151,7 +152,6 @@ async def Menu(ctx: discord.ext.commands.Context):
         await interaction.respond(type=6)
     elif "The Fam" == ctx.guild.name:
         menuembeded = discord.Embed(title="Available commands for Spam Bot!",color=0x00ff00)
-        menuembeded.add_field(name="How to connect?",value="Command brings up instructions on how to join the Minecraft server")
         menuembeded.add_field(name="$Wordme",value="Pulls a random page from Urban Dictonary to give you a new word to learn!")
         menuembeded.add_field(name="$Wordsearch",value="Type $Wordsearch [word to be searched] to look up a word on Urban Dictionary")
         menuembeded.add_field(name="Spam",value="I will randomly change the trigger words, and the phrase to be spammed.")
@@ -161,8 +161,10 @@ async def Menu(ctx: discord.ext.commands.Context):
         menuembeded.add_field(name="$Stop",value="Command remotely stops Minecraft Server")
         menuembeded.add_field(name="$Lenny",value="See what Lenny wants to come and visit!")
         menuembeded.add_field(name="$Add",value="Add something to your notebook!")
-        menuembeded.add_field(name="$Rem",value="Remove something to your notebook!")
-        menuembeded.add_field(name="$Print",value="Print out all the entries to the notebook")
+        menuembeded.add_field(name="$Rem",value="Remove something to your notebook! (syntax: $Rem [Number to the left of the entry])")
+        menuembeded.add_field(name="$Print",value="Print out all the entries to YOUR notebook (use $Printall to print all entries)")
+        menuembeded.add_field(name="$Poll",value="Use $Poll to set up a question and get some feedback!")
+
 
 
 
@@ -180,7 +182,10 @@ async def Menu(ctx: discord.ext.commands.Context):
                     
                 ),
                 ActionRow(
-                    Button(label="Restart",custom_id="restart")
+                    Button(label="Restart",custom_id="restart"),
+                    Button(label="Print All",custom_id="printall"),
+                    Button(label="Print",custom_id="print")
+
                 )
             ]
         )
@@ -198,8 +203,16 @@ async def Menu(ctx: discord.ext.commands.Context):
             await Stop(ctx)
         elif interaction.custom_id == "restart":
             await Restart(ctx)
+        elif interaction.custom_id == "printall":
+            await Printall(ctx)
+        elif interaction.custom_id == "print":
+            await Print(ctx)
         await interaction.respond(type=6)
+    else:
+        menuembeded = discord.Embed(title="Welcome to Spam Can!",color=0x00ff00)
+        menuembeded.add_field(name="Where are all the commands?",value="I am currently unacquainted with this server. So, I dont know exactly what you all would like me to do! Talk with Boomysum to request features!")
         
+        await ctx.channel.send(embed = menuembeded)
 @bot.command()
 async def Wordme(ctx):
     urbanembeded = word_search(1)
@@ -256,7 +269,7 @@ async def Check(ctx):
         await ctx.channel.send("Server is up!")
     else:
         await ctx.channel.send("Server is down!")
-    submenuembeded = discord.Embed(title="What would you like to do next?",color=0x00ff00)
+    submenuembeded = discord.Embed(title="What would you like to do next?",color=0xE51B23)
     submenuembeded.add_field(name="$Start",value="Command remotely starts Minecraft Server")
     submenuembeded.add_field(name="$Restart",value="Command will attempt to shut down the server, then start it again")
     submenuembeded.add_field(name="$Stop",value="Command remotely stops Minecraft Server")
@@ -338,22 +351,42 @@ async def Rem(ctx):
         return
     msg = str(ctx.message.content)
     msg = msg[5:]
-    msg = msg.replace(" ","_")
+    msg = int(msg) - 1
+    tmpstring = ""
 
     pickle_in = open("coord.pickle","rb")
     coord_dict = pickle.load(pickle_in)
     in_dict = user_check(ctx.message.author.name,coord_dict)
     if in_dict == 1:
         try:
-            coord_dict[ctx.message.author.name].remove(msg)
-            await ctx.channel.send("Successfully removed: " + msg)
+            print(msg)
+            tmpstring = coord_dict[ctx.message.author.name][msg]
+            coord_dict[ctx.message.author.name].pop(msg)
+            await ctx.channel.send("Successfully removed: " + str(tmpstring))
         except:
-            await ctx.channel.send("Failed removed: " + msg)
+            await ctx.channel.send("Failed removed: " + str(tmpstring))
     pickle_out = open("coord.pickle","wb")
     pickle.dump(coord_dict,pickle_out)
 
 @bot.command()
 async def Print(ctx):
+    counter = 1
+    if "The Fam" != ctx.guild.name:
+        return
+    tmplist = []
+    pickle_in = open("coord.pickle","rb")
+    coord_dict = pickle.load(pickle_in)
+    for key in coord_dict:
+        if key != ctx.message.author.name:
+            continue
+        await ctx.channel.send("User: " + key)
+        for value in coord_dict[key]:
+            await ctx.channel.send(str(counter) + ". " + str(value).replace("_", " "))
+            counter += 1
+
+@bot.command()
+async def Printall(ctx):
+    counter = 1
     if "The Fam" != ctx.guild.name:
         return
     tmplist = []
@@ -362,7 +395,7 @@ async def Print(ctx):
     for key in coord_dict:
         await ctx.channel.send("User: " + key)
         for value in coord_dict[key]:
-            await ctx.channel.send(str(value).replace("_", " "))
+            await ctx.channel.send(str(counter) + ". " + str(value).replace("_", " "))
 
 @bot.command()
 async def Poll(ctx):
@@ -372,13 +405,23 @@ async def Poll(ctx):
     final = await ctx.channel.send(embed = poll)
     await final.add_reaction("⬆️")
     await final.add_reaction("⬇️")
-        
 
-    
+@bot.command()
+async def Peepee(ctx):
+    peepee = []
+    peepee.append("8")
+    x = random.randrange(1,13)
+    i = 0
+    while i < x:
+        peepee.append("=")
+        i += 1
+    peepee.append("D")
+    peepeecomplete = ''.join(peepee)
+    await ctx.channel.send(peepeecomplete)
 
 
 
 
 
 
-bot.run("ODc5ODM0OTU0NTEzNjU3ODY2.YSVgJw.fdULVb4hpq4HifjwfwuGcqX4qZ4")
+bot.run("REPLACE")
