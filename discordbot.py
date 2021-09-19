@@ -424,4 +424,4 @@ async def Peepee(ctx):
 
 
 
-bot.run("REPLACE")
+bot.run("GET THIS FROM https://discord.com/developers/applications/879834954513657866/bot")
